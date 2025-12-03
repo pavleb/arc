@@ -1899,6 +1899,7 @@ AC_CONFIG_FILES([Makefile
                  src/hed/shc/delegationsh/Makefile
                  src/hed/shc/delegationsh/schema/Makefile
                  src/hed/shc/legacy/Makefile
+                 src/hed/shc/legacy/test/Makefile
                  src/hed/shc/legacy/schema/Makefile
                  src/hed/shc/otokens/Makefile
                  src/hed/identitymap/Makefile
@@ -1918,6 +1919,7 @@ AC_CONFIG_FILES([Makefile
                  src/services/a-rex/a-rex-backtrace-collect
                  src/services/a-rex/a-rex-backtrace-collect.8
                  src/services/a-rex/perferator
+                 src/services/a-rex/update-controldir
                  src/services/a-rex/grid-manager/arc-blahp-logger.8
                  src/services/a-rex/grid-manager/gm-jobs.8
                  src/services/a-rex/rest/Makefile

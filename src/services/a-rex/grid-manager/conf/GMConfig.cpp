@@ -218,8 +218,51 @@ bool GMConfig::CreateControlDirectory() const {
     if (!fix_directory(control_dir+"/restarting", fixdir_always, mode, gm_user.get_uid(), gm_user.get_gid())) res = false;
     if (!fix_directory(control_dir+"/processing", fixdir_always, mode, gm_user.get_uid(), gm_user.get_gid())) res = false;
     if (!fix_directory(control_dir+"/finished", fixdir_always, mode, gm_user.get_uid(), gm_user.get_gid())) res = false;
+    if (!fix_directory(control_dir+"/accounting", fixdir_always, mode, gm_user.get_uid(), gm_user.get_gid())) res = false;
+    if (!fix_directory(control_dir+"/jobs", fixdir_always, mode, gm_user.get_uid(), gm_user.get_gid())) res = false;
     std::string deleg_dir = DelegationDir();
     if (!fix_directory(deleg_dir, fixdir_always, S_IRWXU, gm_user.get_uid(), gm_user.get_gid())) res = false;
+  }
+  return res;
+}
+
+class LogData: public Arc::Run::Data {
+  public:
+    LogData(Arc::Logger& logger, Arc::LogLevel level): logger(logger), level(level) {}
+    virtual ~LogData() {};
+    virtual void Append(char const* data, unsigned int size) {
+      if(data && size) {
+        logger.msg(level, "%s", std::string(data,size));
+      }
+    };
+    virtual void Remove(unsigned int size) {};
+    virtual char const* Get() const { return nullptr; };
+    virtual unsigned int Size() const { return 0; };
+  private:
+    Arc::Logger& logger;
+    Arc::LogLevel level;
+};
+
+bool GMConfig::UpdateControlDirectory() const {
+  bool res = true;
+  if (!control_dir.empty()) {
+    // We have dedicated external tool for updating controldir
+    std::list<std::string> args;
+    args.push_back(Arc::ArcLocation::GetDataDir()+"/update-controldir");
+    args.push_back(control_dir);
+    LogData run_stdout(logger, Arc::INFO);
+    LogData run_stderr(logger, Arc::ERROR);
+    Arc::Run run(args);
+    run.AssignStdout(run_stdout);
+    run.AssignStderr(run_stderr);
+    logger.msg(Arc::INFO, "Starting controldir update tool.");
+    if(!run.Start()) {
+      logger.msg(Arc::ERROR, "Failed to start controldir update tool.");
+      res = false;
+    } else if(!run.Wait()) {
+      logger.msg(Arc::ERROR, "Failed to run controldir update tool. Exit code: %i", run.Result());
+      res = false;
+    }
   }
   return res;
 }
